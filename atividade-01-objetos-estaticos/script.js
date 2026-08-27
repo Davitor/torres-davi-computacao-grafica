@@ -21,7 +21,7 @@ const stemVertices = new Float32Array([
 ]);
 
 
-// VÉRTICES DO MIOLO
+// FUNÇÃO PARA CRIAR CÍRCULOS
 
 function createCircleVertices(centerX, centerY, radius, segments) {
 
@@ -42,12 +42,27 @@ function createCircleVertices(centerX, centerY, radius, segments) {
     return new Float32Array(vertices);
 }
 
+
+// VÉRTICES DO MIOLO
+
 const circleVertices = createCircleVertices(
     0.0,
     0.20,
     0.15,
     40
 );
+
+
+// VÉRTICES DAS PÉTALAS
+
+const petalVertices = [
+    createCircleVertices( 0.0,   0.42, 0.14, 40),
+    createCircleVertices( 0.19,  0.31, 0.14, 40),
+    createCircleVertices( 0.19,  0.09, 0.14, 40),
+    createCircleVertices( 0.0,  -0.02, 0.14, 40),
+    createCircleVertices(-0.19,  0.09, 0.14, 40),
+    createCircleVertices(-0.19,  0.31, 0.14, 40)
+];
 
 
 // BUFFER DA HASTE
@@ -76,6 +91,26 @@ gl.bufferData(
 );
 
 
+// BUFFERS DAS PÉTALAS
+
+const petalBuffers = [];
+
+for (let i = 0; i < petalVertices.length; i++) {
+
+    const buffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        petalVertices[i],
+        gl.STATIC_DRAW
+    );
+
+    petalBuffers.push(buffer);
+}
+
+
 // VERTEX SHADER
 
 const vertexShaderSource = `#version 300 es
@@ -95,10 +130,12 @@ const fragmentShaderSource = `#version 300 es
 
 precision mediump float;
 
+uniform vec4 uColor;
+
 out vec4 outColor;
 
 void main() {
-    outColor = vec4(0.0, 0.8, 0.0, 1.0);
+    outColor = uColor;
 }
 
 `;
@@ -153,11 +190,16 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 }
 
 
-// ATRIBUTO DE POSIÇÃO
+// ATRIBUTOS E UNIFORMS
 
 const positionLocation = gl.getAttribLocation(
     program,
     "aPosition"
+);
+
+const colorLocation = gl.getUniformLocation(
+    program,
+    "uColor"
 );
 
 gl.enableVertexAttribArray(positionLocation);
@@ -187,6 +229,14 @@ gl.vertexAttribPointer(
     0
 );
 
+gl.uniform4f(
+    colorLocation,
+    0.0,
+    0.7,
+    0.0,
+    1.0
+);
+
 gl.drawArrays(
     gl.TRIANGLES,
     0,
@@ -194,9 +244,46 @@ gl.drawArrays(
 );
 
 
+// DESENHAR PÉTALAS
+
+gl.uniform4f(
+    colorLocation,
+    1.0,
+    0.3,
+    0.6,
+    1.0
+);
+
+for (let i = 0; i < petalBuffers.length; i++) {
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        petalBuffers[i]
+    );
+
+    gl.vertexAttribPointer(
+        positionLocation,
+        2,
+        gl.FLOAT,
+        false,
+        0,
+        0
+    );
+
+    gl.drawArrays(
+        gl.TRIANGLE_FAN,
+        0,
+        petalVertices[i].length / 2
+    );
+}
+
+
 // DESENHAR MIOLO
 
-gl.bindBuffer(gl.ARRAY_BUFFER, circleBuffer);
+gl.bindBuffer(
+    gl.ARRAY_BUFFER,
+    circleBuffer
+);
 
 gl.vertexAttribPointer(
     positionLocation,
@@ -205,6 +292,14 @@ gl.vertexAttribPointer(
     false,
     0,
     0
+);
+
+gl.uniform4f(
+    colorLocation,
+    1.0,
+    0.8,
+    0.0,
+    1.0
 );
 
 gl.drawArrays(
