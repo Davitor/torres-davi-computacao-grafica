@@ -8,107 +8,77 @@ if (!gl) {
 }
 
 
-// VÉRTICES DA HASTE
+// FUNÇÃO PARA CRIAR RETÂNGULOS
 
-const stemVertices = new Float32Array([
-    -0.05,  0.1,
-    -0.05, -0.7,
-     0.05, -0.7,
+function createRectangleVertices(left, bottom, right, top) {
+    return new Float32Array([
+        left,  top,
+        left,  bottom,
+        right, bottom,
 
-    -0.05,  0.1,
-     0.05, -0.7,
-     0.05,  0.1
-]);
-
-
-// FUNÇÃO PARA CRIAR CÍRCULOS
-
-function createCircleVertices(centerX, centerY, radius, segments) {
-
-    const vertices = [];
-
-    vertices.push(centerX, centerY);
-
-    for (let i = 0; i <= segments; i++) {
-
-        const angle = (i / segments) * 2 * Math.PI;
-
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-
-        vertices.push(x, y);
-    }
-
-    return new Float32Array(vertices);
+        left,  top,
+        right, bottom,
+        right, top
+    ]);
 }
 
 
-// VÉRTICES DO MIOLO
+// FUNÇÃO PARA CRIAR BUFFER
 
-const circleVertices = createCircleVertices(
-    0.0,
-    0.20,
-    0.15,
-    40
-);
-
-
-// VÉRTICES DAS PÉTALAS
-
-const petalVertices = [
-    createCircleVertices( 0.0,   0.42, 0.14, 40),
-    createCircleVertices( 0.19,  0.31, 0.14, 40),
-    createCircleVertices( 0.19,  0.09, 0.14, 40),
-    createCircleVertices( 0.0,  -0.02, 0.14, 40),
-    createCircleVertices(-0.19,  0.09, 0.14, 40),
-    createCircleVertices(-0.19,  0.31, 0.14, 40)
-];
-
-
-// BUFFER DA HASTE
-
-const stemBuffer = gl.createBuffer();
-
-gl.bindBuffer(gl.ARRAY_BUFFER, stemBuffer);
-
-gl.bufferData(
-    gl.ARRAY_BUFFER,
-    stemVertices,
-    gl.STATIC_DRAW
-);
-
-
-// BUFFER DO MIOLO
-
-const circleBuffer = gl.createBuffer();
-
-gl.bindBuffer(gl.ARRAY_BUFFER, circleBuffer);
-
-gl.bufferData(
-    gl.ARRAY_BUFFER,
-    circleVertices,
-    gl.STATIC_DRAW
-);
-
-
-// BUFFERS DAS PÉTALAS
-
-const petalBuffers = [];
-
-for (let i = 0; i < petalVertices.length; i++) {
-
+function createBuffer(vertices) {
     const buffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
     gl.bufferData(
         gl.ARRAY_BUFFER,
-        petalVertices[i],
+        vertices,
         gl.STATIC_DRAW
     );
 
-    petalBuffers.push(buffer);
+    return buffer;
 }
+
+
+// VÉRTICES DAS PARTES DO ROBÔ
+
+const headVertices = createRectangleVertices(-0.14, 0.32, 0.14, 0.55);
+
+const bodyVertices = createRectangleVertices(-0.18, -0.10, 0.18, 0.28);
+
+const leftArmVertices = createRectangleVertices(-0.30, -0.05, -0.20, 0.22);
+const rightArmVertices = createRectangleVertices(0.20, -0.05, 0.30, 0.22);
+
+const leftLegVertices = createRectangleVertices(-0.12, -0.48, -0.02, -0.10);
+const rightLegVertices = createRectangleVertices(0.02, -0.48, 0.12, -0.10);
+
+const leftFootVertices = createRectangleVertices(-0.16, -0.58, -0.01, -0.48);
+const rightFootVertices = createRectangleVertices(0.01, -0.58, 0.16, -0.48);
+
+const leftEyeVertices = createRectangleVertices(-0.09, 0.44, -0.03, 0.49);
+const rightEyeVertices = createRectangleVertices(0.03, 0.44, 0.09, 0.49);
+
+const mouthVertices = createRectangleVertices(-0.07, 0.36, 0.07, 0.39);
+
+
+// BUFFERS DAS PARTES
+
+const headBuffer = createBuffer(headVertices);
+const bodyBuffer = createBuffer(bodyVertices);
+
+const leftArmBuffer = createBuffer(leftArmVertices);
+const rightArmBuffer = createBuffer(rightArmVertices);
+
+const leftLegBuffer = createBuffer(leftLegVertices);
+const rightLegBuffer = createBuffer(rightLegVertices);
+
+const leftFootBuffer = createBuffer(leftFootVertices);
+const rightFootBuffer = createBuffer(rightFootVertices);
+
+const leftEyeBuffer = createBuffer(leftEyeVertices);
+const rightEyeBuffer = createBuffer(rightEyeVertices);
+
+const mouthBuffer = createBuffer(mouthVertices);
 
 
 // VERTEX SHADER
@@ -141,10 +111,9 @@ void main() {
 `;
 
 
-// COMPILAR SHADERS
+// FUNÇÃO PARA COMPILAR SHADER
 
 function createShader(gl, type, source) {
-
     const shader = gl.createShader(type);
 
     gl.shaderSource(shader, source);
@@ -152,11 +121,8 @@ function createShader(gl, type, source) {
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-
         const error = gl.getShaderInfoLog(shader);
-
         gl.deleteShader(shader);
-
         throw new Error(error);
     }
 
@@ -190,19 +156,42 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 }
 
 
-// ATRIBUTOS E UNIFORMS
+// ATRIBUTO E UNIFORM
 
-const positionLocation = gl.getAttribLocation(
-    program,
-    "aPosition"
-);
-
-const colorLocation = gl.getUniformLocation(
-    program,
-    "uColor"
-);
+const positionLocation = gl.getAttribLocation(program, "aPosition");
+const colorLocation = gl.getUniformLocation(program, "uColor");
 
 gl.enableVertexAttribArray(positionLocation);
+
+
+// FUNÇÃO PARA DESENHAR UMA PARTE
+
+function drawPart(buffer, color) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+    gl.vertexAttribPointer(
+        positionLocation,
+        2,
+        gl.FLOAT,
+        false,
+        0,
+        0
+    );
+
+    gl.uniform4f(
+        colorLocation,
+        color[0],
+        color[1],
+        color[2],
+        color[3]
+    );
+
+    gl.drawArrays(
+        gl.TRIANGLES,
+        0,
+        6
+    );
+}
 
 
 // LIMPAR TELA
@@ -216,94 +205,22 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 gl.useProgram(program);
 
 
-// DESENHAR HASTE
+// DESENHAR ROBÔ
 
-gl.bindBuffer(gl.ARRAY_BUFFER, stemBuffer);
+drawPart(leftLegBuffer,  [0.5, 0.7, 1.0, 1.0]);
+drawPart(rightLegBuffer, [0.5, 0.7, 1.0, 1.0]);
 
-gl.vertexAttribPointer(
-    positionLocation,
-    2,
-    gl.FLOAT,
-    false,
-    0,
-    0
-);
+drawPart(leftFootBuffer,  [0.2, 0.2, 0.2, 1.0]);
+drawPart(rightFootBuffer, [0.2, 0.2, 0.2, 1.0]);
 
-gl.uniform4f(
-    colorLocation,
-    0.0,
-    0.7,
-    0.0,
-    1.0
-);
+drawPart(bodyBuffer, [0.7, 0.8, 0.9, 1.0]);
 
-gl.drawArrays(
-    gl.TRIANGLES,
-    0,
-    6
-);
+drawPart(leftArmBuffer,  [0.5, 0.7, 1.0, 1.0]);
+drawPart(rightArmBuffer, [0.5, 0.7, 1.0, 1.0]);
 
+drawPart(headBuffer, [0.8, 0.85, 0.95, 1.0]);
 
-// DESENHAR PÉTALAS
+drawPart(leftEyeBuffer,  [0.0, 1.0, 1.0, 1.0]);
+drawPart(rightEyeBuffer, [0.0, 1.0, 1.0, 1.0]);
 
-gl.uniform4f(
-    colorLocation,
-    1.0,
-    0.3,
-    0.6,
-    1.0
-);
-
-for (let i = 0; i < petalBuffers.length; i++) {
-
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        petalBuffers[i]
-    );
-
-    gl.vertexAttribPointer(
-        positionLocation,
-        2,
-        gl.FLOAT,
-        false,
-        0,
-        0
-    );
-
-    gl.drawArrays(
-        gl.TRIANGLE_FAN,
-        0,
-        petalVertices[i].length / 2
-    );
-}
-
-
-// DESENHAR MIOLO
-
-gl.bindBuffer(
-    gl.ARRAY_BUFFER,
-    circleBuffer
-);
-
-gl.vertexAttribPointer(
-    positionLocation,
-    2,
-    gl.FLOAT,
-    false,
-    0,
-    0
-);
-
-gl.uniform4f(
-    colorLocation,
-    1.0,
-    0.8,
-    0.0,
-    1.0
-);
-
-gl.drawArrays(
-    gl.TRIANGLE_FAN,
-    0,
-    circleVertices.length / 2
-);
+drawPart(mouthBuffer, [0.2, 0.2, 0.2, 1.0]);
