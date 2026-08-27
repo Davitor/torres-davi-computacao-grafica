@@ -3,14 +3,36 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Atividade 01 - Computação Gráfica</title>
+    <title>Atividade 01 - Objetos Estáticos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <canvas id="canvas" width="600" height="600"></canvas>
+    <h1>Objetos Estáticos - WebGL</h1>
 
-    <script src="script.js"></script>
+    <div class="objetos">
+
+        <div>
+            <h2>Flor</h2>
+            <canvas id="flowerCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <div>
+            <h2>Robô</h2>
+            <canvas id="robotCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <div>
+            <h2>Carro</h2>
+            <canvas id="carCanvas" width="400" height="400"></canvas>
+        </div>
+
+    </div>
+
+    <script type="module" src="flor.js"></script>
+    <script type="module" src="robo.js"></script>
+    <script type="module" src="carro.js"></script>
 
 </body>
 
