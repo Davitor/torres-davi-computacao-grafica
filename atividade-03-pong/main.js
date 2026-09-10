@@ -337,14 +337,75 @@ function drawBolaCentro(){
 
 }
 
+// INTERAÇÃO COM O TECLADO
+
+document.addEventListener(
+    "keydown",
+    keyboardClick,
+    false
+);
+
+function keyboardClick(event) {
+
+    switch (event.key) {
+
+        case "w":
+        case "W":
+            tyBE += txBE_offset;
+            break;
+
+        case "s":
+        case "S":
+            tyBE -= txBE_offset;
+            break;
+
+        case "ArrowUp":
+            tyBD += txBD_offset;
+            break;
+
+        case "ArrowDown":
+            tyBD -= txBD_offset;
+            break;
+
+        default:
+            return;
+    }
+
+    if (tyBE > 0.8) {
+        tyBE = 0.8;
+    }
+
+    if (tyBE < -0.8) {
+        tyBE = -0.8;
+    }
+
+    if (tyBD > 0.8) {
+        tyBD = 0.8;
+    }
+
+    if (tyBD < -0.8) {
+        tyBD = -0.8;
+    }
+
+    MbarraEsquerda = m3.translation(
+        -0.9,
+        tyBE
+    );
+
+    MbarraDireita = m3.translation(
+        0.9,
+        tyBD
+    );
+}
+
 // --------------------------------------------------
 // PARÂMETROS ANIMAÇÃO
 // --------------------------------------------------
 
 let tyBE = 0.0;
 let tyBD = 0.0;
-let txBE_offset = 0.01;
-let txBD_offset = 0.01;
+let txBE_offset = 0.05;
+let txBD_offset = 0.05;
 let txBola = 0.0;
 let tyBola = 0.0;
 let txBola_offset = 0.005;
