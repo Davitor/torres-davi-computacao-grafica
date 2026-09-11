@@ -5,75 +5,115 @@ if (!gl) {
     throw new Error("WebGL 2 não é suportado.");
 }
 
-// --------------------------------------------------
-// VERTICES E CORES
-// --------------------------------------------------
 
-function verticesBarra(){
+// VÉRTICES E CORES
+
+function verticesBarra() {
     return new Float32Array([
         -0.05,  0.2,
         -0.05, -0.2,
          0.05,  0.2,
+
          0.05,  0.2,
         -0.05, -0.2,
          0.05, -0.2
     ]);
 }
 
-function verticesBola(){
+function verticesBola() {
+
     let vertices = [];
     let numSegments = 30;
     let radius = 0.05;
 
     for (let i = 0; i < numSegments; i++) {
-        let theta1 = (i / numSegments) * 2 * Math.PI;
-        let theta2 = ((i + 1) / numSegments) * 2 * Math.PI;
 
-        vertices.push(0, 0); // Center of the circle
-        vertices.push(radius * Math.cos(theta1), radius * Math.sin(theta1));
-        vertices.push(radius * Math.cos(theta2), radius * Math.sin(theta2));
+        let theta1 =
+            (i / numSegments) *
+            2 *
+            Math.PI;
+
+        let theta2 =
+            ((i + 1) / numSegments) *
+            2 *
+            Math.PI;
+
+        vertices.push(
+            0,
+            0
+        );
+
+        vertices.push(
+            radius * Math.cos(theta1),
+            radius * Math.sin(theta1)
+        );
+
+        vertices.push(
+            radius * Math.cos(theta2),
+            radius * Math.sin(theta2)
+        );
     }
 
     return new Float32Array(vertices);
 }
 
-let verticesBarraDireita = verticesBarra();
 
-let corBarraDireita = new Float32Array([
-    0.0, 0.0, 1.0,
-]);
+let verticesBarraDireita =
+    verticesBarra();
 
-let verticesBarraEsquerda = verticesBarra();
+let corBarraDireita =
+    new Float32Array([
+        0.0,
+        0.0,
+        1.0
+    ]);
 
-let corBarraEsquerda = new Float32Array([
-    0.0, 1.0, 0.0,
-]);
+let verticesBarraEsquerda =
+    verticesBarra();
 
-let verticesBolaCentro = verticesBola();
+let corBarraEsquerda =
+    new Float32Array([
+        0.0,
+        1.0,
+        0.0
+    ]);
 
-let corBolaCentro = new Float32Array([
-    1.0, 0.0, 0.0,
-]);
+let verticesBolaCentro =
+    verticesBola();
 
-// --------------------------------------------------
+let corBolaCentro =
+    new Float32Array([
+        1.0,
+        0.0,
+        0.0
+    ]);
+
+
 // TRANSFORMAÇÕES
-// --------------------------------------------------
 
-let MbarraEsquerda = m3.translation(-0.9, 0.0);
+let MbarraEsquerda =
+    m3.translation(
+        -0.9,
+        0.0
+    );
 
-let MbarraDireita = m3.translation(0.9, 0.0);
+let MbarraDireita =
+    m3.translation(
+        0.9,
+        0.0
+    );
 
-let MbolaCentro = m3.identity();
+let MbolaCentro =
+    m3.identity();
 
-// --------------------------------------------------
+
 // BUFFER
-// --------------------------------------------------
 
-const verticesBuffer = gl.createBuffer();
+const verticesBuffer =
+    gl.createBuffer();
 
-// --------------------------------------------------
+
 // VERTEX SHADER
-// --------------------------------------------------
 
 const vertexShaderSource = `#version 300 es
 
@@ -81,19 +121,24 @@ in vec2 aPosition;
 
 uniform mat3 u_transform;
 
-out vec3 vColor;
-
 void main() {
-    vec3 position = u_transform * vec3(aPosition, 1.0);
-    gl_Position = vec4(position.xy, 0.0, 1.0);
+
+    vec3 position =
+        u_transform *
+        vec3(aPosition, 1.0);
+
+    gl_Position =
+        vec4(
+            position.xy,
+            0.0,
+            1.0
+        );
 }
 
 `;
 
 
-// --------------------------------------------------
 // FRAGMENT SHADER
-// --------------------------------------------------
 
 const fragmentShaderSource = `#version 300 es
 
@@ -104,27 +149,38 @@ uniform vec3 uColor;
 out vec4 outColor;
 
 void main() {
-    outColor = vec4(uColor, 1.0);
+
+    outColor =
+        vec4(
+            uColor,
+            1.0
+        );
 }
 
 `;
 
 
-// --------------------------------------------------
 // COMPILAR SHADERS
-// --------------------------------------------------
 
 function createShader(gl, type, source) {
 
-    const shader = gl.createShader(type);
+    const shader =
+        gl.createShader(type);
 
-    gl.shaderSource(shader, source);
+    gl.shaderSource(
+        shader,
+        source
+    );
 
     gl.compileShader(shader);
 
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    if (!gl.getShaderParameter(
+        shader,
+        gl.COMPILE_STATUS
+    )) {
 
-        const error = gl.getShaderInfoLog(shader);
+        const error =
+            gl.getShaderInfoLog(shader);
 
         gl.deleteShader(shader);
 
@@ -135,31 +191,42 @@ function createShader(gl, type, source) {
 }
 
 
-const vertexShader = createShader(
-    gl,
-    gl.VERTEX_SHADER,
-    vertexShaderSource
+const vertexShader =
+    createShader(
+        gl,
+        gl.VERTEX_SHADER,
+        vertexShaderSource
+    );
+
+const fragmentShader =
+    createShader(
+        gl,
+        gl.FRAGMENT_SHADER,
+        fragmentShaderSource
+    );
+
+
+// PROGRAMA
+
+const program =
+    gl.createProgram();
+
+gl.attachShader(
+    program,
+    vertexShader
 );
 
-const fragmentShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    fragmentShaderSource
+gl.attachShader(
+    program,
+    fragmentShader
 );
-
-
-// --------------------------------------------------
-// CRIAR PROGRAMA
-// --------------------------------------------------
-
-const program = gl.createProgram();
-
-gl.attachShader(program, vertexShader);
-gl.attachShader(program, fragmentShader);
 
 gl.linkProgram(program);
 
-if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+if (!gl.getProgramParameter(
+    program,
+    gl.LINK_STATUS
+)) {
 
     throw new Error(
         gl.getProgramInfoLog(program)
@@ -167,9 +234,7 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 }
 
 
-// --------------------------------------------------
-// LOCAL DOS ATRIBUTOS E DO UNIFORM
-// --------------------------------------------------
+// ATRIBUTOS E UNIFORMS
 
 const positionLocation =
     gl.getAttribLocation(
@@ -189,37 +254,51 @@ const transformLocation =
         "u_transform"
     );
 
-// --------------------------------------------------
-// LIMPAR TELA
-// --------------------------------------------------
 
-gl.clearColor(0.1, 0.1, 0.1, 1.0);
+// CONFIGURAÇÃO DA TELA
 
-gl.clear(gl.COLOR_BUFFER_BIT);
+gl.clearColor(
+    0.1,
+    0.1,
+    0.1,
+    1.0
+);
+
+gl.clear(
+    gl.COLOR_BUFFER_BIT
+);
 
 
-// --------------------------------------------------
-// DESENHAR
-// --------------------------------------------------
+// DESENHO
 
 const numComponents = 2;
 
-function drawScene(){
-    
+function drawScene() {
+
     atualizaAnimacao();
 
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(
+        gl.COLOR_BUFFER_BIT
+    );
+
     gl.useProgram(program);
+
     drawBarraEsquerda();
     drawBarraDireita();
     drawBolaCentro();
-    
-    requestAnimationFrame(drawScene);
+
+    requestAnimationFrame(
+        drawScene
+    );
 }
 
-function drawBarraEsquerda(){
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+function drawBarraEsquerda() {
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        verticesBuffer
+    );
 
     gl.bufferData(
         gl.ARRAY_BUFFER,
@@ -227,7 +306,9 @@ function drawBarraEsquerda(){
         gl.STATIC_DRAW
     );
 
-    gl.enableVertexAttribArray(positionLocation);
+    gl.enableVertexAttribArray(
+        positionLocation
+    );
 
     gl.vertexAttribPointer(
         positionLocation,
@@ -252,14 +333,18 @@ function drawBarraEsquerda(){
     gl.drawArrays(
         gl.TRIANGLES,
         0,
-        verticesBarraEsquerda.length / numComponents
+        verticesBarraEsquerda.length /
+        numComponents
     );
-
 }
 
-function drawBarraDireita(){
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+function drawBarraDireita() {
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        verticesBuffer
+    );
 
     gl.bufferData(
         gl.ARRAY_BUFFER,
@@ -267,7 +352,9 @@ function drawBarraDireita(){
         gl.STATIC_DRAW
     );
 
-    gl.enableVertexAttribArray(positionLocation);
+    gl.enableVertexAttribArray(
+        positionLocation
+    );
 
     gl.vertexAttribPointer(
         positionLocation,
@@ -292,14 +379,18 @@ function drawBarraDireita(){
     gl.drawArrays(
         gl.TRIANGLES,
         0,
-        verticesBarraDireita.length / numComponents
+        verticesBarraDireita.length /
+        numComponents
     );
-
 }
 
-function drawBolaCentro(){
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+function drawBolaCentro() {
+
+    gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        verticesBuffer
+    );
 
     gl.bufferData(
         gl.ARRAY_BUFFER,
@@ -307,7 +398,9 @@ function drawBolaCentro(){
         gl.STATIC_DRAW
     );
 
-    gl.enableVertexAttribArray(positionLocation);
+    gl.enableVertexAttribArray(
+        positionLocation
+    );
 
     gl.vertexAttribPointer(
         positionLocation,
@@ -332,44 +425,122 @@ function drawBolaCentro(){
     gl.drawArrays(
         gl.TRIANGLES,
         0,
-        verticesBolaCentro.length / numComponents
+        verticesBolaCentro.length /
+        numComponents
     );
-
 }
 
-// INTERAÇÃO COM O TECLADO
+
+// PARÂMETROS DA ANIMAÇÃO
+
+let tyBE = 0.0;
+let tyBD = 0.0;
+
+let velocidadeBarra = 0.025;
+
+let txBola = 0.0;
+let tyBola = 0.0;
+
+let txBola_offset = 0.011;
+let tyBola_offset = 0.011;
+
+
+// ESTADO DO TECLADO
+
+let teclaW = false;
+let teclaS = false;
+
+let teclaCima = false;
+let teclaBaixo = false;
+
+
+// TECLADO
 
 document.addEventListener(
     "keydown",
-    keyboardClick,
+    teclaPressionada,
     false
 );
 
-function keyboardClick(event) {
+document.addEventListener(
+    "keyup",
+    teclaSolta,
+    false
+);
+
+
+function teclaPressionada(event) {
 
     switch (event.key) {
 
         case "w":
         case "W":
-            tyBE += txBE_offset;
+            teclaW = true;
             break;
 
         case "s":
         case "S":
-            tyBE -= txBE_offset;
+            teclaS = true;
             break;
 
         case "ArrowUp":
-            tyBD += txBD_offset;
+            teclaCima = true;
+            event.preventDefault();
             break;
 
         case "ArrowDown":
-            tyBD -= txBD_offset;
+            teclaBaixo = true;
+            event.preventDefault();
+            break;
+    }
+}
+
+
+function teclaSolta(event) {
+
+    switch (event.key) {
+
+        case "w":
+        case "W":
+            teclaW = false;
             break;
 
-        default:
-            return;
+        case "s":
+        case "S":
+            teclaS = false;
+            break;
+
+        case "ArrowUp":
+            teclaCima = false;
+            break;
+
+        case "ArrowDown":
+            teclaBaixo = false;
+            break;
     }
+}
+
+
+// ATUALIZAR ANIMAÇÃO
+
+function atualizaAnimacao() {
+
+    if (teclaW) {
+        tyBE += velocidadeBarra;
+    }
+
+    if (teclaS) {
+        tyBE -= velocidadeBarra;
+    }
+
+    if (teclaCima) {
+        tyBD += velocidadeBarra;
+    }
+
+    if (teclaBaixo) {
+        tyBD -= velocidadeBarra;
+    }
+
 
     if (tyBE > 0.8) {
         tyBE = 0.8;
@@ -387,46 +558,52 @@ function keyboardClick(event) {
         tyBD = -0.8;
     }
 
-    MbarraEsquerda = m3.translation(
-        -0.9,
-        tyBE
-    );
 
-    MbarraDireita = m3.translation(
-        0.9,
-        tyBD
-    );
+    MbarraEsquerda =
+        m3.translation(
+            -0.9,
+            tyBE
+        );
+
+    MbarraDireita =
+        m3.translation(
+            0.9,
+            tyBD
+        );
+
+
+    txBola +=
+        txBola_offset;
+
+    if (
+        txBola > 0.9 ||
+        txBola < -0.9
+    ) {
+        txBola_offset =
+            -txBola_offset;
+    }
+
+
+    tyBola +=
+        tyBola_offset;
+
+    if (
+        tyBola > 1.0 ||
+        tyBola < -1.0
+    ) {
+        tyBola_offset =
+            -tyBola_offset;
+    }
+
+
+    MbolaCentro =
+        m3.translation(
+            txBola,
+            tyBola
+        );
 }
 
-// --------------------------------------------------
-// PARÂMETROS ANIMAÇÃO
-// --------------------------------------------------
 
-let tyBE = 0.0;
-let tyBD = 0.0;
-let txBE_offset = 0.05;
-let txBD_offset = 0.05;
-let txBola = 0.0;
-let tyBola = 0.0;
-let txBola_offset = 0.005;
-let tyBola_offset = 0.005;
-
-function atualizaAnimacao(){
-    txBola += txBola_offset;
-
-    if(txBola > 0.9 || txBola<-0.9)
-        txBola_offset = -txBola_offset;
-
-    tyBola += tyBola_offset;
-    if(tyBola > 1.0 || tyBola<-1.0)
-        tyBola_offset = -tyBola_offset;
-
-    MbolaCentro = m3.translation(txBola,tyBola);
-}
-
-
-// --------------------------------------------------
-// INÍCIO DO DESENHO
-// --------------------------------------------------
+// INÍCIO
 
 drawScene();
