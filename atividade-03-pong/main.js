@@ -1,6 +1,9 @@
 const canvas = document.getElementById("canvas");
 const gl = canvas.getContext("webgl2");
 
+const placar =
+    document.getElementById("placar");
+
 if (!gl) {
     throw new Error("WebGL 2 não é suportado.");
 }
@@ -444,6 +447,16 @@ let tyBola = 0.0;
 let txBola_offset = 0.011;
 let tyBola_offset = 0.011;
 
+let pontosEsquerda = 0;
+let pontosDireita = 0;
+
+function atualizarPlacar() {
+
+    placar.textContent =
+        pontosEsquerda +
+        " x " +
+        pontosDireita;
+}
 
 // ESTADO DO TECLADO
 
@@ -495,7 +508,6 @@ function teclaPressionada(event) {
     }
 }
 
-
 function teclaSolta(event) {
 
     switch (event.key) {
@@ -520,10 +532,25 @@ function teclaSolta(event) {
     }
 }
 
+function reiniciarBola(direcao) {
+
+    txBola = 0.0;
+    tyBola = 0.0;
+
+    if (direcao === "direita") {
+        txBola_offset = Math.abs(txBola_offset);
+    }
+
+    if (direcao === "esquerda") {
+        txBola_offset = -Math.abs(txBola_offset);
+    }
+}
 
 // ATUALIZAR ANIMAÇÃO
 
 function atualizaAnimacao() {
+
+    // 1. MOVER AS BARRAS
 
     if (teclaW) {
         tyBE += velocidadeBarra;
@@ -542,6 +569,8 @@ function atualizaAnimacao() {
     }
 
 
+    // 2. LIMITAR AS BARRAS DENTRO DA TELA
+
     if (tyBE > 0.8) {
         tyBE = 0.8;
     }
@@ -559,6 +588,8 @@ function atualizaAnimacao() {
     }
 
 
+    // 3. ATUALIZAR AS MATRIZES DAS BARRAS
+
     MbarraEsquerda =
         m3.translation(
             -0.9,
@@ -572,29 +603,76 @@ function atualizaAnimacao() {
         );
 
 
-    txBola +=
-        txBola_offset;
+    // 4. MOVER A BOLA
+
+    txBola += txBola_offset;
+    tyBola += tyBola_offset;
+
+
+    // 5. VERIFICAR COLISÃO DA BOLA COM TETO E CHÃO
 
     if (
-        txBola > 0.9 ||
-        txBola < -0.9
-    ) {
-        txBola_offset =
-            -txBola_offset;
-    }
-
-
-    tyBola +=
-        tyBola_offset;
-
-    if (
-        tyBola > 1.0 ||
-        tyBola < -1.0
+        tyBola > 0.95 ||
+        tyBola < -0.95
     ) {
         tyBola_offset =
             -tyBola_offset;
     }
 
+
+    // 6. VERIFICAR COLISÃO COM AS BARRAS
+
+    if (
+        txBola >= 0.8 &&
+        txBola <= 0.9 &&
+        tyBola + 0.05 >= tyBD - 0.2 &&
+        tyBola - 0.05 <= tyBD + 0.2
+    ) {
+        txBola_offset =
+            -Math.abs(txBola_offset);
+    }
+
+    if (
+        txBola <= -0.8 &&
+        txBola >= -0.9 &&
+        tyBola + 0.05 >= tyBE - 0.2 &&
+        tyBola - 0.05 <= tyBE + 0.2
+    ) {
+        txBola_offset =
+            Math.abs(txBola_offset);
+    }
+
+    // 7. VERIFICAR PONTUAÇÃO
+
+if (txBola > 1.05) {
+
+    pontosEsquerda++;
+
+    console.log(
+        "Placar:",
+        pontosEsquerda,
+        "x",
+        pontosDireita
+    );
+
+    reiniciarBola("direita");
+}
+
+if (txBola < -1.05) {
+
+    pontosDireita++;
+
+    console.log(
+        "Placar:",
+        pontosEsquerda,
+        "x",
+        pontosDireita
+    );
+
+    reiniciarBola("esquerda");
+}
+
+    // 8. ATUALIZAR A MATRIZ DA BOLA
 
     MbolaCentro =
         m3.translation(
