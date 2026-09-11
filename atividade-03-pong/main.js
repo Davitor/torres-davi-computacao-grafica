@@ -642,35 +642,25 @@ function atualizaAnimacao() {
             Math.abs(txBola_offset);
     }
 
-    // 7. VERIFICAR PONTUAÇÃO
+        // 7. VERIFICAR PONTUAÇÃO
 
-if (txBola > 1.05) {
+    if (txBola > 1.05) {
 
-    pontosEsquerda++;
+        pontosEsquerda++;
 
-    console.log(
-        "Placar:",
-        pontosEsquerda,
-        "x",
-        pontosDireita
-    );
+        atualizarPlacar();
 
-    reiniciarBola("direita");
-}
+        reiniciarBola("direita");
+    }
 
-if (txBola < -1.05) {
+    if (txBola < -1.05) {
 
-    pontosDireita++;
+        pontosDireita++;
 
-    console.log(
-        "Placar:",
-        pontosEsquerda,
-        "x",
-        pontosDireita
-    );
+        atualizarPlacar();
 
-    reiniciarBola("esquerda");
-}
+        reiniciarBola("esquerda");
+    }
 
     // 8. ATUALIZAR A MATRIZ DA BOLA
 
