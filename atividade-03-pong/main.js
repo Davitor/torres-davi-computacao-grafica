@@ -450,6 +450,7 @@ let tyBola_offset = 0.011;
 let pontosEsquerda = 0;
 let pontosDireita = 0;
 
+
 function atualizarPlacar() {
 
     placar.textContent =
@@ -457,6 +458,7 @@ function atualizarPlacar() {
         " x " +
         pontosDireita;
 }
+
 
 // ESTADO DO TECLADO
 
@@ -508,6 +510,7 @@ function teclaPressionada(event) {
     }
 }
 
+
 function teclaSolta(event) {
 
     switch (event.key) {
@@ -532,19 +535,25 @@ function teclaSolta(event) {
     }
 }
 
+
+// REINICIAR BOLA
+
 function reiniciarBola(direcao) {
 
     txBola = 0.0;
     tyBola = 0.0;
 
     if (direcao === "direita") {
-        txBola_offset = Math.abs(txBola_offset);
+        txBola_offset =
+            Math.abs(txBola_offset);
     }
 
     if (direcao === "esquerda") {
-        txBola_offset = -Math.abs(txBola_offset);
+        txBola_offset =
+            -Math.abs(txBola_offset);
     }
 }
+
 
 // ATUALIZAR ANIMAÇÃO
 
@@ -622,27 +631,49 @@ function atualizaAnimacao() {
 
     // 6. VERIFICAR COLISÃO COM AS BARRAS
 
+    // BARRA DIREITA
+
     if (
+        txBola_offset > 0 &&
         txBola >= 0.8 &&
         txBola <= 0.9 &&
         tyBola + 0.05 >= tyBD - 0.2 &&
         tyBola - 0.05 <= tyBD + 0.2
     ) {
+
+        let pontoColisao =
+            (tyBola - tyBD) / 0.2;
+
         txBola_offset =
             -Math.abs(txBola_offset);
+
+        tyBola_offset =
+            pontoColisao * 0.015;
     }
 
+
+    // BARRA ESQUERDA
+
     if (
+        txBola_offset < 0 &&
         txBola <= -0.8 &&
         txBola >= -0.9 &&
         tyBola + 0.05 >= tyBE - 0.2 &&
         tyBola - 0.05 <= tyBE + 0.2
     ) {
+
+        let pontoColisao =
+            (tyBola - tyBE) / 0.2;
+
         txBola_offset =
             Math.abs(txBola_offset);
+
+        tyBola_offset =
+            pontoColisao * 0.015;
     }
 
-        // 7. VERIFICAR PONTUAÇÃO
+
+    // 7. VERIFICAR PONTUAÇÃO
 
     if (txBola > 1.05) {
 
@@ -661,6 +692,7 @@ function atualizaAnimacao() {
 
         reiniciarBola("esquerda");
     }
+
 
     // 8. ATUALIZAR A MATRIZ DA BOLA
 
